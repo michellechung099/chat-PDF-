@@ -17,8 +17,6 @@ load_dotenv()
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
-client = OpenAI()
-
 # Process the Input PDF
 def process_file(doc):
     # create embeddings object with HuggingFace embedding function
