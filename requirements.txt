@@ -5,8 +5,7 @@ langchain-community
 langchain-openai
 openai
 chromadb
-pypdf2
-PyPDF2
+pypdf
 torch
 transformers
 sentence-transformers
