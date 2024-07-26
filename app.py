@@ -1,16 +1,16 @@
 import streamlit as st
 from dotenv import load_dotenv
-from langchain.embeddings import HuggingFaceEmbeddings, OpenAIEmbeddings
-from langchain_openai import ChatOpenAI
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
-from langchain.vectorstores import Chroma 
-from langchain.document_loaders import PyPDFLoader
 from pypdf import PdfReader, PdfWriter
 from tempfile import NamedTemporaryFile
 import base64
 from htmlTemplates import expander_css, css, bot_template, user_template
 from openai import OpenAI
 import os
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.vectorstores import Chroma
 
 # load the API keys
 load_dotenv()
@@ -46,6 +46,7 @@ def process_file(doc):
 
 # Method for Handling User Input
 def handle_userinput(query, expander):
+    # generate a response using conversational chain object 
     response = st.session_state.conversation({"question": query, "chat_history": st.session_state.chat_history}, return_only_outputs=True)
     
     # append query and recieved response to chat history to session
@@ -54,6 +55,7 @@ def handle_userinput(query, expander):
     # retrieve referenced page number in response 
     st.session_state.N = list(response['source_documents'][0])[1][1]['page']
 
+    # update chat in expander with chat history in session state
     for i, message in enumerate(st.session_state.chat_history): 
         expander.write(user_template.replace("{{MSG}}", message[0]), unsafe_allow_html=True)
         expander.write(bot_template.replace("{{MSG}}", message[1]), unsafe_allow_html=True)
@@ -126,6 +128,7 @@ def main():
                 reader = PdfReader(temp.name)
                 
                 pdf_writer = PdfWriter()
+                # start and ending page numbers of PDF to be extracted 
                 start = max(st.session_state.N-2, 0)
                 end = min(st.session_state.N+2, len(reader.pages)-1) 
                 while start <= end:
