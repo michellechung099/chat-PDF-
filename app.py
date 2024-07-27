@@ -116,6 +116,8 @@ def main():
                         # save the returned conversation chain prompt based on uploaded pdf
                         st.session_state.conversation = process_file(pdf)
                         st.markdown("Done processing")
+        
+        st.subheader("Summary")
 
 
     with col2:
@@ -139,8 +141,8 @@ def main():
                     with open(temp2.name, "rb") as f:
                         base64_pdf = base64.b64encode(f.read()).decode('utf-8')
 
-                        pdf_display = F'<iframe src="data:application/pdf;base64,{base64_pdf}#page={3}"\
-                            width="100%" height="900" type="application/pdf frameborder="0"></iframe>'
+                        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}#page={3}"\
+                            width="100%" height="900" type="application/pdf"></iframe>'
                     
                         st.markdown(pdf_display, unsafe_allow_html=True)
 
