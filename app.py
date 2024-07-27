@@ -3,14 +3,14 @@ from dotenv import load_dotenv
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
+from langchain.document_loaders import PyPDFLoader
+from langchain.vectorstores import Chroma 
 from pypdf import PdfReader, PdfWriter
 from tempfile import NamedTemporaryFile
 import base64
 from htmlTemplates import expander_css, css, bot_template, user_template
 from openai import OpenAI
 import os
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_community.vectorstores import Chroma
 
 # load the API keys
 load_dotenv()
