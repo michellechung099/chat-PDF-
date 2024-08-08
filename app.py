@@ -1,4 +1,3 @@
-import sys
 import streamlit as st
 from dotenv import load_dotenv
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -13,8 +12,6 @@ from htmlTemplates import expander_css, css, bot_template, user_template
 from openai import OpenAI
 import os
 
-__import__('pysqlite3')
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 # load the API keys
 load_dotenv()
 
