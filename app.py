@@ -123,11 +123,11 @@ def main():
     with col2:
         if user_question:
             handle_userinput(user_question, expander1)
-        with NamedTemporaryFile(suffix="pdf") as temp:
-            if pdf_doc is not None:
-                temp.write(pdf_doc.getvalue())
-                temp.seek(0)
-                reader = PdfReader(temp.name)
+            with NamedTemporaryFile(suffix="pdf") as temp:
+                if pdf_doc is not None:
+                    temp.write(pdf_doc.getvalue())
+                    temp.seek(0)
+                    reader = PdfReader(temp.name)
                 
                 pdf_writer = PdfWriter()
                 # start and ending page numbers of PDF to be extracted 
@@ -141,8 +141,7 @@ def main():
                     with open(temp2.name, "rb") as f:
                         base64_pdf = base64.b64encode(f.read()).decode('utf-8')
 
-                        pdf_display = f"""<embed src="data:application/pdf;base64,{base64_pdf}"
-                            width="100%" height="900" type="application/pdf">"""
+                        pdf_display = pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}"width="100%" height="900" type="application/pdf"></iframe>'
                     
                         st.markdown(pdf_display, unsafe_allow_html=True)
 
