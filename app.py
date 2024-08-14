@@ -37,7 +37,7 @@ def process_file(doc):
 
     # process query and retrieve relevant information from db 
     conversation_chain = ConversationalRetrievalChain.from_llm(
-        ChatOpenAI(model="gpt-3.5-turbo", temperature=0.3),
+        ChatOpenAI(model="gpt-3.5-turbo", temperature=0.3, openai_api_key=openai_api_key),
         # returns top 2 most relevant documents 
         retriever=db.as_retriever(search_kwargs={"k":2}),
         # returns actual documents from which the response was derived for later reference 
