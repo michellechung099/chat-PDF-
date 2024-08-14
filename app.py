@@ -107,6 +107,10 @@ def main():
         if col1.button("Process", key="process"):
             with st.spinner("Processing"):
                 if pdf_doc is not None:
+                    # reset conversation and chat history and N
+                    st.session_state["conversation"] = None 
+                    st.session_state["chat_history"] = []
+                    st.session_state["N"] = 0
                     # creates a temp file used for processing uploaded pdf for automatic cleanup
                     with NamedTemporaryFile(suffix="pdf") as temp:
                         bytes_data = pdf_doc.getvalue()
