@@ -2,6 +2,7 @@ __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 import streamlit as st
+from streamlit_pdf_viewer import pdf_viewer
 from dotenv import load_dotenv
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -10,7 +11,6 @@ from langchain.document_loaders import PyPDFLoader
 from langchain.vectorstores import Chroma 
 from pypdf import PdfReader, PdfWriter
 from tempfile import NamedTemporaryFile
-import base64
 from htmlTemplates import expander_css, css, bot_template, user_template
 from openai import OpenAI
 import os
@@ -95,7 +95,6 @@ def handle_userinput(query, expander):
     response = st.session_state.conversation({"question": query, "chat_history": st.session_state.chat_history}, return_only_outputs=True)
     initial_response = response["answer"]
 
-    print("initial response", initial_response)
     relevant_docs = response['source_documents']
 
     # Apply prompt chaining to refine the response
@@ -142,7 +141,7 @@ def main():
     if "N" not in st.session_state: 
         st.session_state["N"] = 0
 
-    col1, col2 = st.columns([1,1])
+    col1, col2 = st.columns([1,1], gap="large")
 
     # every widget with a key is automatically added to Session State 
     with col1: 
@@ -194,19 +193,12 @@ def main():
                 while start <= end:
                     pdf_writer.add_page(reader.pages[start])
                     start+=1
+
                 with NamedTemporaryFile(suffix="pdf") as temp2:
                     pdf_writer.write(temp2.name)
-                    with open(temp2.name, "rb") as f:
-                        base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-
-                        pdf_display = pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}"width="100%" height="900" type="application/pdf"></iframe>'
-                    
-                        st.markdown(pdf_display, unsafe_allow_html=True)
-
-
-    
-
-
+                    temp2.seek(0)
+                    pdf_data = temp2.read() 
+                    pdf_viewer(input=pdf_data, width=800, height=900)
 
 if __name__ == '__main__':
     main()
