@@ -20,6 +20,8 @@ load_dotenv()
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
+client = OpenAI(api_key=openai_api_key)
+
 # Process the Input PDF
 def process_file(doc):
     # create embeddings object with HuggingFace embedding function
@@ -44,16 +46,67 @@ def process_file(doc):
         return_source_documents=True
     )
 
-    # return conversational chain object
     return conversation_chain
+
+def extract_relevant_quotes(docs, query):
+    MODEL = "gpt-3.5-turbo"
+    relevant_text = "\n".join([doc.page_content for doc in docs])
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": (
+                "Your task is to help answer a question given in a document."
+                "The first step is to extract quotes relevant to the question from the document, delimited by ####."
+                "Please output the list of quotes using <quotes></quotes>."
+                "Respond with No relevant quotes found! if no relevant quotes were found."
+            )},
+            {"role": "user", "content": f"####\n{relevant_text}\n####\nQuestion: {query}"},
+        ],
+        temperature=0, 
+    )
+
+    return response.choices[0].message.content
+
+def generate_final_response(initial_response, relevant_quotes, query):
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": (
+                "Below is an initial response to a question based on a document. "
+                "Please refine this response using the relevant quotes provided. "
+                "Ensure that the answer is accurate, detailed, and helpful."
+            )},
+            {"role": "user", "content": f"####\nInitial Response: {initial_response}\n####"},
+            {"role": "user", "content": f"Relevant Quotes: {relevant_quotes}\n####"},
+            {"role": "user", "content": f"Question: {query}"}
+        ],
+        temperature=0,
+    )
+
+    return response.choices[0].message.content
+
+
 
 # Method for Handling User Input
 def handle_userinput(query, expander):
     # generate a response using conversational chain object 
     response = st.session_state.conversation({"question": query, "chat_history": st.session_state.chat_history}, return_only_outputs=True)
+    initial_response = response["answer"]
+
+    print("initial response", initial_response)
+    relevant_docs = response['source_documents']
+
+    # Apply prompt chaining to refine the response
+    if initial_response:
+        extracted_quotes = extract_relevant_quotes(relevant_docs, query)
+        final_response = generate_final_response(initial_response, extracted_quotes, query)
+    else:
+        final_response = "No relevant information found in the document."
     
     # append query and recieved response to chat history to session
-    st.session_state.chat_history += [(query, response['answer'])]
+    st.session_state.chat_history += [(query, final_response)]
 
     # retrieve referenced page number in response 
     st.session_state.N = list(response['source_documents'][0])[1][1]['page']
@@ -123,8 +176,6 @@ def main():
                         # save the returned conversation chain prompt based on uploaded pdf
                         st.session_state.conversation = process_file(pdf)
                         st.markdown("Done processing")
-        
-        st.subheader("Summary")
 
 
     with col2:
